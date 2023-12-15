@@ -1,0 +1,5 @@
+homepage: "https://countly.com/"
+documentation: "https://countly.zendesk.com/hc/en-us/articles/26404933988121"
+versions:
+  - sha: ff6ec5f87ede238520482ed51bc303a0e699f051
+    changeNotes: Initial release.
