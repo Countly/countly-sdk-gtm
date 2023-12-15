@@ -1,4 +1,4 @@
-# countly-sdk-gtm
+# Countly GTM SDK
 
 This SDK is based on [Countly Web SDK](https://github.com/Countly/countly-sdk-web).
 
