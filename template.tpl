@@ -264,7 +264,7 @@ const onFailure = () => {
 };
 
 if (data.action === 'init') {
-  injectScript('https://cdn.jsdelivr.net/npm/countly-sdk-web@latest/lib/countly.js', onSuccess, onFailure);
+  injectScript('https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.1/lib/countly.js', onSuccess, onFailure);
 } else if (data.action === 'event') {
 // ====================================================
 // Countly Event Recording Operations
@@ -325,7 +325,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@latest/lib/countly.js"
+                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.1/lib/countly.js"
               }
             ]
           }
