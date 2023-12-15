@@ -217,37 +217,49 @@ const injectScript = require('injectScript');
 const callInWindow = require('callInWindow');
 
 log(data);
+const SDK_NAME = "javascript_gtm_web";
+const SDK_VERSION = "23.12.0";
 
 // ====================================================
 // Countly Script injection operations 
 // ====================================================
 const onSuccess = () => {
-  log('Countly loaded.');
+  log('[Countly] [GTM] Countly loaded.');
+  if (data.debug) {
+    log('[Countly] [GTM] SDK logs enabled.');
+  }
   callInWindow('Countly.init', {
             app_key: data.appKey,
             url: data.serverUrl,
-            debug: data.debug
+            debug: data.debug,
+            sdk_name: SDK_NAME,
+            sdk_version: SDK_VERSION
         } );
   if (data.trackSessions) {
-  callInWindow('Countly.track_sessions');
+    log('[Countly] [GTM] Tracking Sessions.');
+    callInWindow('Countly.track_sessions');
   }
   if (data.trackViews) {
-  callInWindow('Countly.track_pageview');
+    log('[Countly] [GTM] Tracking Views.');
+    callInWindow('Countly.track_pageview');
   }
   if (data.trackClicks) {
-  callInWindow('Countly.track_clicks');
+    log('[Countly] [GTM] Tracking Clicks.');
+    callInWindow('Countly.track_clicks');
   }
   if (data.trackScrolls) {
-  callInWindow('Countly.track_scrolls');
+    log('[Countly] [GTM] Tracking Scrolls.');
+    callInWindow('Countly.track_scrolls');
   }
   if (data.trackErrors) {
-  callInWindow('Countly.track_errors');
+    log('[Countly] [GTM] Tracking Errors.');
+    callInWindow('Countly.track_errors');
   }
   data.gtmOnSuccess();
 };
 
 const onFailure = () => {
-  log('Countly load failed.');
+  log('[Countly] [GTM] Countly load failed.');
   data.gtmOnFailure();
 };
 
@@ -258,6 +270,7 @@ if (data.action === 'init') {
 // Countly Event Recording Operations
 // ====================================================
   if (data.eventSegmentation && data.event_segmentation.length > 0) {
+    log('[Countly] [GTM] Recording an event with segmentation.');
     const len = data.eventSegmentation.length;
     let segmentation = {};
     for(let i=0; i<len; i++) {
@@ -266,6 +279,7 @@ if (data.action === 'init') {
     }
     callInWindow('Countly.add_event', { key:data.eventKey, segmentation: segmentation });
   } else {
+    log('[Countly] [GTM] Recording an event without segmentation.');
     callInWindow('Countly.add_event', { key:data.eventKey });
   }
 
@@ -311,7 +325,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web*"
+                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@latest/lib/countly.js"
               }
             ]
           }
