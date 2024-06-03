@@ -1,5 +1,7 @@
 homepage: "https://countly.com/"
 documentation: "https://countly.zendesk.com/hc/en-us/articles/26404933988121"
 versions:
+  - sha: 774f9425bd4f9acc89187450baa8e7bc71d71597
+    changeNotes: Added link tracking
   - sha: e0c4b1aefe35885c2429ffec6fed766388be32f2
     changeNotes: Initial release.
