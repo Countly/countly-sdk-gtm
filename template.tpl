@@ -14,7 +14,10 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "Countly Analytics",
-  "categories": ["ANALYTICS", "HEAT_MAP"],
+  "categories": [
+    "ANALYTICS",
+    "HEAT_MAP"
+  ],
   "brand": {
     "id": "brand_dummy",
     "displayName": "",
@@ -161,6 +164,19 @@ ___TEMPLATE_PARAMETERS___
         ]
       },
       {
+        "type": "CHECKBOX",
+        "name": "trackLinks",
+        "checkboxText": "Track Links",
+        "simpleValueType": true,
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "init",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
         "type": "TEXT",
         "name": "eventKey",
         "displayName": "Event Key",
@@ -218,7 +234,7 @@ const callInWindow = require('callInWindow');
 
 log(data);
 const SDK_NAME = "javascript_gtm_web";
-const SDK_VERSION = "23.12.0";
+const SDK_VERSION = "23.12.1";
 
 // ====================================================
 // Countly Script injection operations 
@@ -255,6 +271,10 @@ const onSuccess = () => {
     log('[Countly] [GTM] Tracking Errors.');
     callInWindow('Countly.track_errors');
   }
+  if (data.trackLinks) {
+     log('[Countly] [GTM] Tracking Links.');
+     callInWindow('Countly.track_links');
+  }
   data.gtmOnSuccess();
 };
 
@@ -264,7 +284,7 @@ const onFailure = () => {
 };
 
 if (data.action === 'init') {
-  injectScript('https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.1/lib/countly.js', onSuccess, onFailure);
+  injectScript('https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.6/lib/countly.js', onSuccess, onFailure);
 } else if (data.action === 'event') {
 // ====================================================
 // Countly Event Recording Operations
@@ -325,7 +345,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.1/lib/countly.js"
+                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.6/lib/countly.js"
               }
             ]
           }
@@ -607,6 +627,45 @@ ___WEB_PERMISSIONS___
                   {
                     "type": 1,
                     "string": "Countly.track_errors"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.track_links"
                   },
                   {
                     "type": 8,
