@@ -195,6 +195,60 @@ ___TEMPLATE_PARAMETERS___
         ]
       },
       {
+        "type": "TEXT",
+        "name": "eventSum",
+        "displayName": "Event Sum",
+        "simpleValueType": true,
+        "valueValidators": [
+          {
+            "type": "NUMBER"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "event",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
+        "name": "eventDur",
+        "displayName": "Event Duration",
+        "simpleValueType": true,
+        "valueValidators": [
+          {
+            "type": "NON_NEGATIVE_NUMBER"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "event",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
+        "name": "eventCount",
+        "displayName": "Event Count",
+        "simpleValueType": true,
+        "valueValidators": [
+          {
+            "type": "POSITIVE_NUMBER"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "event",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
         "type": "SIMPLE_TABLE",
         "name": "eventSegmentation",
         "displayName": "Segmentation",
@@ -231,10 +285,11 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 const log = require('logToConsole');
 const injectScript = require('injectScript');
 const callInWindow = require('callInWindow');
+const JSON = require('JSON');
 
 log(data);
 const SDK_NAME = "javascript_gtm_web";
-const SDK_VERSION = "23.12.1";
+const SDK_VERSION = "23.12.2";
 
 // ====================================================
 // Countly Script injection operations 
@@ -289,19 +344,33 @@ if (data.action === 'init') {
 // ====================================================
 // Countly Event Recording Operations
 // ====================================================
-  if (data.eventSegmentation && data.event_segmentation.length > 0) {
-    log('[Countly] [GTM] Recording an event with segmentation.');
+  log('[Countly] [GTM] Recording event with key:['+ data.eventKey +']');
+  let ev = { key: data.eventKey };
+  if (data.eventSum) {
+    log('[Countly] [GTM] Event sum:['+ data.eventSum +']');
+    ev.sum = data.eventSum;    
+  }
+  if (data.eventDur) {
+    log('[Countly] [GTM] Event duration:['+ data.eventDur +']');
+    ev.dur = data.eventDur;    
+  }
+  if (data.eventCount) {
+    log('[Countly] [GTM] Event count:['+ data.eventCount +']');
+    ev.count = data.eventCount;    
+  }
+  if (data.eventSegmentation && data.eventSegmentation.length > 0) {
+    log('[Countly] [GTM] Event segmentation:[' + JSON.stringify(data.eventSegmentation) + ']');
     const len = data.eventSegmentation.length;
     let segmentation = {};
     for(let i=0; i<len; i++) {
       const current = data.eventSegmentation[i];
       segmentation[current.segmentKey] = current.segmentVal;
     }
-    callInWindow('Countly.add_event', { key:data.eventKey, segmentation: segmentation });
-  } else {
-    log('[Countly] [GTM] Recording an event without segmentation.');
-    callInWindow('Countly.add_event', { key:data.eventKey });
+    ev.segmentation = segmentation;
   }
+  
+  callInWindow('Countly.add_event', ev);
+  
 
   data.gtmOnSuccess();
 }
@@ -696,7 +765,53 @@ ___WEB_PERMISSIONS___
 
 ___TESTS___
 
-scenarios: []
+scenarios:
+- name: Event_all
+  code: |-
+    const mockData = {"eventSum":"1","eventDur":"1","eventKey":"a","action":"event","eventCount":"1","eventSegmentation":[{"segmentKey":"key1","segmentVal":"val1"},{"segmentKey":"key2","segmentVal":"val2"}],"gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Event_sum_count_dur
+  code: |-
+    const mockData = {"eventSum":"1","eventDur":"1","eventKey":"a","action":"event","eventCount":"1","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Event_sum_count
+  code: |-
+    const mockData = {"eventSum":"1","eventKey":"a","action":"event","eventCount":"1","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Event_sum
+  code: |-
+    const mockData = {"eventSum":"1","eventKey":"a","action":"event","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Event
+  code: |-
+    const mockData = {"eventKey":"a","action":"event","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+setup: ''
 
 
 ___NOTES___
