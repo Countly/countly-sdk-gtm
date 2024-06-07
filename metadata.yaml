@@ -1,7 +1,7 @@
 homepage: "https://countly.com/"
 documentation: "https://countly.zendesk.com/hc/en-us/articles/26404933988121"
 versions:
-  - sha: 31a22daca8f3fb8f9e0d0f85af80b558c98fde1b
+  - sha: f5465879251291b932db2be5340fca5533d30884
     changeNotes: Expanded Events API - 23.12.2
   - sha: 774f9425bd4f9acc89187450baa8e7bc71d71597
     changeNotes: Added link tracking
