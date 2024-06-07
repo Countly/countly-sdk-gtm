@@ -346,17 +346,18 @@ if (data.action === 'init') {
 // ====================================================
   log('[Countly] [GTM] Recording event with key:['+ data.eventKey +']');
   let ev = { key: data.eventKey };
+  // data provides string values
   if (data.eventSum) {
     log('[Countly] [GTM] Event sum:['+ data.eventSum +']');
-    ev.sum = data.eventSum;    
+    ev.sum = JSON.parse(data.eventSum);    
   }
   if (data.eventDur) {
     log('[Countly] [GTM] Event duration:['+ data.eventDur +']');
-    ev.dur = data.eventDur;    
+    ev.dur = JSON.parse(data.eventDur);    
   }
   if (data.eventCount) {
     log('[Countly] [GTM] Event count:['+ data.eventCount +']');
-    ev.count = data.eventCount;    
+    ev.count = JSON.parse(data.eventCount);    
   }
   if (data.eventSegmentation && data.eventSegmentation.length > 0) {
     log('[Countly] [GTM] Event segmentation:[' + JSON.stringify(data.eventSegmentation) + ']');
@@ -777,7 +778,7 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();
 - name: Event_sum_count_dur
   code: |-
-    const mockData = {"eventSum":"1","eventDur":"1","eventKey":"a","action":"event","eventCount":"1","gtmTagId":2147483646,"gtmEventId":1};
+    const mockData = {"eventSum":"-1","eventDur":"1","eventKey":"a","action":"event","eventCount":"1","gtmTagId":2147483646,"gtmEventId":1};
 
     // Call runCode to run the template's code.
     runCode(mockData);
@@ -786,7 +787,7 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();
 - name: Event_sum_count
   code: |-
-    const mockData = {"eventSum":"1","eventKey":"a","action":"event","eventCount":"1","gtmTagId":2147483646,"gtmEventId":1};
+    const mockData = {"eventSum":"-1","eventKey":"a","action":"event","eventCount":"1","gtmTagId":2147483646,"gtmEventId":1};
 
     // Call runCode to run the template's code.
     runCode(mockData);
@@ -795,7 +796,7 @@ scenarios:
     assertApi('gtmOnSuccess').wasCalled();
 - name: Event_sum
   code: |-
-    const mockData = {"eventSum":"1","eventKey":"a","action":"event","gtmTagId":2147483646,"gtmEventId":1};
+    const mockData = {"eventSum":"-1","eventKey":"a","action":"event","gtmTagId":2147483646,"gtmEventId":1};
 
     // Call runCode to run the template's code.
     runCode(mockData);
