@@ -1,3 +1,8 @@
+## 23.12.2
+
+* Added `sum`, `count` and `duration` to events
+* Added event tests
+
 ## 23.12.1
 
 * Added automatic link tracking
