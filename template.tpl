@@ -45,6 +45,14 @@ ___TEMPLATE_PARAMETERS___
       {
         "value": "event",
         "displayValue": "Record Event"
+      },
+      {
+        "value": "widget",
+        "displayValue": "Display Feedback Widget"
+      },
+      {
+        "value": "refresh",
+        "displayValue": "Refresh Content Zone"
       }
     ],
     "simpleValueType": true,
@@ -177,6 +185,19 @@ ___TEMPLATE_PARAMETERS___
         ]
       },
       {
+        "type": "CHECKBOX",
+        "name": "enableJourneys",
+        "checkboxText": "Enabled Journeys",
+        "simpleValueType": true,
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "init",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
         "type": "TEXT",
         "name": "eventKey",
         "displayName": "Event Key",
@@ -273,6 +294,48 @@ ___TEMPLATE_PARAMETERS___
             "type": "EQUALS"
           }
         ]
+      },
+      {
+        "type": "SELECT",
+        "name": "widgetSelection",
+        "displayName": "Select Widget",
+        "macrosInSelect": false,
+        "selectItems": [
+          {
+            "value": "survey",
+            "displayValue": "Survey"
+          },
+          {
+            "value": "nps",
+            "displayValue": "NPS"
+          },
+          {
+            "value": "rating",
+            "displayValue": "Rating"
+          }
+        ],
+        "simpleValueType": true,
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "widget",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
+        "name": "widgetTag",
+        "displayName": "Optional Widget Name, Tag or ID",
+        "simpleValueType": true,
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "widget",
+            "type": "EQUALS"
+          }
+        ],
+        "canBeEmptyString": true
       }
     ]
   }
@@ -289,7 +352,7 @@ const JSON = require('JSON');
 
 log(data);
 const SDK_NAME = "javascript_gtm_web";
-const SDK_VERSION = "23.12.2";
+const SDK_VERSION = "25.4.0";
 
 // ====================================================
 // Countly Script injection operations 
@@ -330,6 +393,10 @@ const onSuccess = () => {
      log('[Countly] [GTM] Tracking Links.');
      callInWindow('Countly.track_links');
   }
+  if (data.enableJourneys) {
+     log('[Countly] [GTM] Will enable Journeys.');
+     callInWindow('Countly.content.enterContentZone');
+  }
   data.gtmOnSuccess();
 };
 
@@ -339,7 +406,7 @@ const onFailure = () => {
 };
 
 if (data.action === 'init') {
-  injectScript('https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.6/lib/countly.js', onSuccess, onFailure);
+  injectScript('https://cdn.jsdelivr.net/npm/countly-sdk-web@25.4.1/lib/countly.js', onSuccess, onFailure);
 } else if (data.action === 'event') {
 // ====================================================
 // Countly Event Recording Operations
@@ -374,6 +441,25 @@ if (data.action === 'init') {
   
 
   data.gtmOnSuccess();
+} else if (data.action === 'widget') {
+  log('[Countly] [GTM] Displaying widget of type:['+ data.widgetSelection +'] with identifier:[' + data.widgetTag + ']');
+  if (data.widgetSelection === 'survey') {
+    log('[Countly] [GTM] Displaying survey');
+    callInWindow('Countly.feedback.showSurvey', data.widgetTag);
+  }
+  if (data.widgetSelection === 'rating') {
+    log('[Countly] [GTM] Displaying rating');
+    callInWindow('Countly.feedback.showRating', data.widgetTag);
+  }
+  if (data.widgetSelection === 'nps') {
+    log('[Countly] [GTM] Displaying nps');
+    callInWindow('Countly.feedback.showNPS', data.widgetTag);
+  }
+  data.gtmOnSuccess();
+} else if (data.action === 'refresh') {
+    log('[Countly] [GTM] Will refresh Content zone');
+    callInWindow('Countly.content.refreshContentZone');
+    data.gtmOnSuccess();
 }
 
 
@@ -415,7 +501,7 @@ ___WEB_PERMISSIONS___
             "listItem": [
               {
                 "type": 1,
-                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@23.12.6/lib/countly.js"
+                "string": "https://cdn.jsdelivr.net/npm/countly-sdk-web@25.4.1/lib/countly.js"
               }
             ]
           }
@@ -750,6 +836,201 @@ ___WEB_PERMISSIONS___
                     "boolean": true
                   }
                 ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.feedback.showNPS"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.feedback.showSurvey"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.feedback.showRating"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.content.enterContentZone"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.content.refreshContentZone"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
               }
             ]
           }
@@ -806,6 +1087,42 @@ scenarios:
 - name: Event
   code: |-
     const mockData = {"eventKey":"a","action":"event","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Feedback_survey
+  code: |-
+    const mockData = {"widgetSelection":"survey","action":"widget","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Feedback_nps
+  code: |-
+    const mockData = {"widgetSelection":"nps","action":"widget","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Feedback_rating
+  code: |-
+    const mockData = {"widgetSelection":"rating","action":"widget","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Refresh
+  code: |-
+    const mockData = {"action":"refresh","gtmTagId":2147483646,"gtmEventId":1};
 
     // Call runCode to run the template's code.
     runCode(mockData);
