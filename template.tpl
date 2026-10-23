@@ -199,6 +199,25 @@ ___TEMPLATE_PARAMETERS___
       },
       {
         "type": "TEXT",
+        "name": "maxKeyLength",
+        "displayName": "Max Key Length",
+        "simpleValueType": true,
+        "help": "Maximum number of characters in a key, such as an event key or a segmentation key. Longer keys are truncated. Leave empty to use the SDK default of 128. A value set in SDK Behavior Settings on the server takes precedence.",
+        "valueValidators": [
+          {
+            "type": "POSITIVE_NUMBER"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "init",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
         "name": "eventKey",
         "displayName": "Event Key",
         "simpleValueType": true,
@@ -362,13 +381,19 @@ const onSuccess = () => {
   if (data.debug) {
     log('[Countly] [GTM] SDK logs enabled.');
   }
-  callInWindow('Countly.init', {
+  let config = {
             app_key: data.appKey,
             url: data.serverUrl,
             debug: data.debug,
             sdk_name: SDK_NAME,
             sdk_version: SDK_VERSION
-        } );
+        };
+  // data provides string values
+  if (data.maxKeyLength) {
+    log('[Countly] [GTM] Max key length:['+ data.maxKeyLength +']');
+    config.max_key_length = JSON.parse(data.maxKeyLength);
+  }
+  callInWindow('Countly.init', config);
   if (data.trackSessions) {
     log('[Countly] [GTM] Tracking Sessions.');
     callInWindow('Countly.track_sessions');
@@ -1128,6 +1153,49 @@ scenarios:
     runCode(mockData);
 
     // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_max_key_length
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"maxKeyLength":"50","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the limit is passed to init as a number.
+    assertApi('callInWindow').wasCalledWith('Countly.init', {
+      app_key: 'key',
+      url: 'https://example.count.ly',
+      debug: false,
+      sdk_name: 'javascript_gtm_web',
+      sdk_version: '25.4.0',
+      max_key_length: 50
+    });
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_default_key_length
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that init leaves the limit to the SDK default when the field is empty.
+    assertApi('callInWindow').wasCalledWith('Countly.init', {
+      app_key: 'key',
+      url: 'https://example.count.ly',
+      debug: false,
+      sdk_name: 'javascript_gtm_web',
+      sdk_version: '25.4.0'
+    });
     assertApi('gtmOnSuccess').wasCalled();
 setup: ''
 

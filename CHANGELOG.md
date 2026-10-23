@@ -1,3 +1,7 @@
+## XX.XX.XX
+
+* Added a "Max Key Length" option to the init action for limiting the length of keys
+
 ## 25.4.0
 
 * ! Minor Breaking Change ! SDK now supports Server Configuration feature and it is enabled by default. Changes made on SDK Manager > SDK Configuration on your server will * affect SDK behavior directly
