@@ -94,6 +94,20 @@ ___TEMPLATE_PARAMETERS___
         ]
       },
       {
+        "type": "TEXT",
+        "name": "deviceId",
+        "displayName": "Device ID",
+        "simpleValueType": true,
+        "help": "Custom device ID for this visitor. Leave empty to let the SDK generate one. Ignored when the SDK stored a device ID on an earlier page load, or when the page URL has a cly_device_id parameter.",
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "init",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
         "type": "CHECKBOX",
         "name": "debug",
         "checkboxText": "Enable SDK Logs",
@@ -362,13 +376,18 @@ const onSuccess = () => {
   if (data.debug) {
     log('[Countly] [GTM] SDK logs enabled.');
   }
-  callInWindow('Countly.init', {
+  let config = {
             app_key: data.appKey,
             url: data.serverUrl,
             debug: data.debug,
             sdk_name: SDK_NAME,
             sdk_version: SDK_VERSION
-        } );
+        };
+  if (data.deviceId) {
+    log('[Countly] [GTM] Custom device ID provided.');
+    config.device_id = data.deviceId;
+  }
+  callInWindow('Countly.init', config);
   if (data.trackSessions) {
     log('[Countly] [GTM] Tracking Sessions.');
     callInWindow('Countly.track_sessions');
@@ -1128,6 +1147,48 @@ scenarios:
     runCode(mockData);
 
     // Verify that the tag finished successfully.
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_device_id
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"deviceId":"user_42","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the custom device ID is passed to init.
+    assertThat(initConfig.device_id).isEqualTo('user_42');
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_empty_device_id
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"deviceId":"","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that init leaves the device ID to the SDK when the field is empty.
+    assertThat(initConfig.device_id).isUndefined();
     assertApi('gtmOnSuccess').wasCalled();
 setup: ''
 
