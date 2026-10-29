@@ -1,0 +1,6 @@
+---
+# CHANGELOG.md follows the Countly changelog format (## version headings, long entries), which markdownlint's defaults reject.
+engines:
+  markdownlint:
+    exclude_paths:
+      - "CHANGELOG.md"

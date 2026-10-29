@@ -1,6 +1,6 @@
 ## XX.XX.XX
 
-* Added a "Max Key Length" option to the init action for limiting the length of keys
+* Added a "Max Key Length" option to the init action to limit key length
 
 ## 25.4.0
 

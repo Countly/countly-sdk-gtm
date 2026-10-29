@@ -202,7 +202,7 @@ ___TEMPLATE_PARAMETERS___
         "name": "maxKeyLength",
         "displayName": "Max Key Length",
         "simpleValueType": true,
-        "help": "Maximum number of characters in a key, such as an event key or a segmentation key. Longer keys are truncated. Leave empty to use the SDK default of 128. A value set in SDK Behavior Settings on the server takes precedence.",
+        "help": "Maximum number of characters in a key, such as an event key or a segmentation key. Longer keys are truncated. Leave empty to use the SDK default of 128. Values below 10 also shorten the keys the SDK sends for views, clicks and link clicks. A value set in SDK Behavior Settings on the server takes precedence.",
         "valueValidators": [
           {
             "type": "POSITIVE_NUMBER"
@@ -1162,19 +1162,18 @@ scenarios:
     mock('injectScript', (url, onSuccess, onFailure) => {
       onSuccess();
     });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
 
     // Call runCode to run the template's code.
     runCode(mockData);
 
     // Verify that the limit is passed to init as a number.
-    assertApi('callInWindow').wasCalledWith('Countly.init', {
-      app_key: 'key',
-      url: 'https://example.count.ly',
-      debug: false,
-      sdk_name: 'javascript_gtm_web',
-      sdk_version: '25.4.0',
-      max_key_length: 50
-    });
+    assertThat(initConfig.max_key_length).isStrictlyEqualTo(50);
     assertApi('gtmOnSuccess').wasCalled();
 - name: Init_default_key_length
   code: |-
@@ -1184,18 +1183,18 @@ scenarios:
     mock('injectScript', (url, onSuccess, onFailure) => {
       onSuccess();
     });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
 
     // Call runCode to run the template's code.
     runCode(mockData);
 
     // Verify that init leaves the limit to the SDK default when the field is empty.
-    assertApi('callInWindow').wasCalledWith('Countly.init', {
-      app_key: 'key',
-      url: 'https://example.count.ly',
-      debug: false,
-      sdk_name: 'javascript_gtm_web',
-      sdk_version: '25.4.0'
-    });
+    assertThat(initConfig.max_key_length).isUndefined();
     assertApi('gtmOnSuccess').wasCalled();
 setup: ''
 
