@@ -1175,9 +1175,6 @@ scenarios:
 - name: Init_device_id
   code: |-
     const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"deviceId":"user_42","action":"init","gtmTagId":2147483646,"gtmEventId":1};
-- name: Init_max_key_length
-  code: |-
-    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"maxKeyLength":"50","action":"init","gtmTagId":2147483646,"gtmEventId":1};
 
     // Load the SDK successfully without a network call.
     mock('injectScript', (url, onSuccess, onFailure) => {
@@ -1199,6 +1196,42 @@ scenarios:
 - name: Init_empty_device_id
   code: |-
     const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"deviceId":"","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that init leaves the device ID to the SDK when the field is empty.
+    assertThat(initConfig.device_id).isUndefined();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_max_key_length
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"maxKeyLength":"50","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
     // Verify that the limit is passed to init as a number.
     assertThat(initConfig.max_key_length).isStrictlyEqualTo(50);
     assertApi('gtmOnSuccess').wasCalled();
@@ -1220,8 +1253,6 @@ scenarios:
     // Call runCode to run the template's code.
     runCode(mockData);
 
-    // Verify that init leaves the device ID to the SDK when the field is empty.
-    assertThat(initConfig.device_id).isUndefined();
     // Verify that init leaves the limit to the SDK default when the field is empty.
     assertThat(initConfig.max_key_length).isUndefined();
     assertApi('gtmOnSuccess').wasCalled();
