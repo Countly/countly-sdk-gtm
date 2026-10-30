@@ -213,6 +213,25 @@ ___TEMPLATE_PARAMETERS___
       },
       {
         "type": "TEXT",
+        "name": "maxKeyLength",
+        "displayName": "Max Key Length",
+        "simpleValueType": true,
+        "help": "Maximum number of characters in a key, such as an event key or a segmentation key. Longer keys are truncated. Leave empty to use the SDK default of 128. Values below 10 also shorten the keys the SDK sends for views, clicks and link clicks. A value set in SDK Behavior Settings on the server takes precedence.",
+        "valueValidators": [
+          {
+            "type": "POSITIVE_NUMBER"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "init",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
         "name": "eventKey",
         "displayName": "Event Key",
         "simpleValueType": true,
@@ -386,6 +405,11 @@ const onSuccess = () => {
   if (data.deviceId) {
     log('[Countly] [GTM] Custom device ID provided.');
     config.device_id = data.deviceId;
+  }
+  // data provides string values
+  if (data.maxKeyLength) {
+    log('[Countly] [GTM] Max key length:['+ data.maxKeyLength +']');
+    config.max_key_length = JSON.parse(data.maxKeyLength);
   }
   callInWindow('Countly.init', config);
   if (data.trackSessions) {
@@ -1151,6 +1175,9 @@ scenarios:
 - name: Init_device_id
   code: |-
     const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"deviceId":"user_42","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+- name: Init_max_key_length
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"maxKeyLength":"50","action":"init","gtmTagId":2147483646,"gtmEventId":1};
 
     // Load the SDK successfully without a network call.
     mock('injectScript', (url, onSuccess, onFailure) => {
@@ -1172,6 +1199,12 @@ scenarios:
 - name: Init_empty_device_id
   code: |-
     const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"deviceId":"","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+    // Verify that the limit is passed to init as a number.
+    assertThat(initConfig.max_key_length).isStrictlyEqualTo(50);
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_default_key_length
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"action":"init","gtmTagId":2147483646,"gtmEventId":1};
 
     // Load the SDK successfully without a network call.
     mock('injectScript', (url, onSuccess, onFailure) => {
@@ -1189,6 +1222,8 @@ scenarios:
 
     // Verify that init leaves the device ID to the SDK when the field is empty.
     assertThat(initConfig.device_id).isUndefined();
+    // Verify that init leaves the limit to the SDK default when the field is empty.
+    assertThat(initConfig.max_key_length).isUndefined();
     assertApi('gtmOnSuccess').wasCalled();
 setup: ''
 

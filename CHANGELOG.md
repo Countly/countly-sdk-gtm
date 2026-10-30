@@ -1,6 +1,7 @@
 ## XX.XX.XX
 
 * Added a "Device ID" option to the init action for setting a custom device ID
+* Added a "Max Key Length" option to the init action to limit key length
 
 ## 25.4.0
 
