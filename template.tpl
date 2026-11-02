@@ -232,6 +232,25 @@ ___TEMPLATE_PARAMETERS___
       },
       {
         "type": "TEXT",
+        "name": "maxBreadcrumbCount",
+        "displayName": "Max Breadcrumb Count",
+        "simpleValueType": true,
+        "help": "Maximum number of breadcrumbs, the lines your own code adds with Countly.add_log, that the SDK keeps for the next error report. When the limit is reached, the oldest breadcrumb is removed. Leave empty to use the SDK default of 100. A value set in SDK Behavior Settings on the server takes precedence.",
+        "valueValidators": [
+          {
+            "type": "POSITIVE_NUMBER"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "init",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
         "name": "eventKey",
         "displayName": "Event Key",
         "simpleValueType": true,
@@ -410,6 +429,16 @@ const onSuccess = () => {
   if (data.maxKeyLength) {
     log('[Countly] [GTM] Max key length:['+ data.maxKeyLength +']');
     config.max_key_length = JSON.parse(data.maxKeyLength);
+  }
+  if (data.maxBreadcrumbCount) {
+    const maxBreadcrumbCount = JSON.parse(data.maxBreadcrumbCount);
+    // the Web SDK loops forever on a limit that is not positive
+    if (maxBreadcrumbCount > 0) {
+      log('[Countly] [GTM] Max breadcrumb count:['+ data.maxBreadcrumbCount +']');
+      config.max_breadcrumb_count = maxBreadcrumbCount;
+    } else {
+      log('[Countly] [GTM] Ignoring max breadcrumb count:['+ data.maxBreadcrumbCount +'], it must be a positive number.');
+    }
   }
   callInWindow('Countly.init', config);
   if (data.trackSessions) {
@@ -1255,6 +1284,69 @@ scenarios:
 
     // Verify that init leaves the limit to the SDK default when the field is empty.
     assertThat(initConfig.max_key_length).isUndefined();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_max_breadcrumb_count
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"maxBreadcrumbCount":"50","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the limit is passed to init as a number.
+    assertThat(initConfig.max_breadcrumb_count).isStrictlyEqualTo(50);
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_default_breadcrumb_count
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that init leaves the limit to the SDK default when the field is empty.
+    assertThat(initConfig.max_breadcrumb_count).isUndefined();
+    assertApi('gtmOnSuccess').wasCalled();
+- name: Init_zero_breadcrumb_count
+  code: |-
+    const mockData = {"serverUrl":"https://example.count.ly","appKey":"key","debug":false,"maxBreadcrumbCount":"0","action":"init","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Load the SDK successfully without a network call.
+    mock('injectScript', (url, onSuccess, onFailure) => {
+      onSuccess();
+    });
+    let initConfig;
+    mock('callInWindow', (path, config) => {
+      if (path === 'Countly.init') {
+        initConfig = config;
+      }
+    });
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that a limit that is not positive is left to the SDK default.
+    assertThat(initConfig.max_breadcrumb_count).isUndefined();
     assertApi('gtmOnSuccess').wasCalled();
 setup: ''
 

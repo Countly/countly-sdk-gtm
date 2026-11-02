@@ -2,6 +2,7 @@
 
 * Added a "Device ID" option to the init action for setting a custom device ID
 * Added a "Max Key Length" option to the init action to limit key length
+* Added a "Max Breadcrumb Count" option to the init action to limit how many breadcrumbs are kept for error reports
 
 ## 25.4.0
 
