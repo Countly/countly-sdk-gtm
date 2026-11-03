@@ -2,6 +2,7 @@
 
 * Added a "Device ID" option to the init action for setting a custom device ID
 * Added a "Max Key Length" option to the init action to limit key length
+* Added a "Multiply User Property" action for multiplying a custom user property's value
 
 ## 25.4.0
 

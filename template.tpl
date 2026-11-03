@@ -53,6 +53,10 @@ ___TEMPLATE_PARAMETERS___
       {
         "value": "refresh",
         "displayValue": "Refresh Content Zone"
+      },
+      {
+        "value": "multiply",
+        "displayValue": "Multiply User Property"
       }
     ],
     "simpleValueType": true,
@@ -369,6 +373,47 @@ ___TEMPLATE_PARAMETERS___
           }
         ],
         "canBeEmptyString": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userPropertyKey",
+        "displayName": "User Property Key",
+        "simpleValueType": true,
+        "help": "Name of the custom user property to multiply.",
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "multiply",
+            "type": "EQUALS"
+          }
+        ],
+        "valueValidators": [
+          {
+            "type": "NON_EMPTY"
+          }
+        ]
+      },
+      {
+        "type": "TEXT",
+        "name": "userPropertyMultiplier",
+        "displayName": "Multiply By",
+        "simpleValueType": true,
+        "help": "Number the stored value of the property is multiplied by on the server. The change is sent right away.",
+        "enablingConditions": [
+          {
+            "paramName": "action",
+            "paramValue": "multiply",
+            "type": "EQUALS"
+          }
+        ],
+        "valueValidators": [
+          {
+            "type": "NON_EMPTY"
+          },
+          {
+            "type": "NUMBER"
+          }
+        ]
       }
     ]
   }
@@ -503,6 +548,19 @@ if (data.action === 'init') {
     log('[Countly] [GTM] Will refresh Content zone');
     callInWindow('Countly.content.refreshContentZone');
     data.gtmOnSuccess();
+} else if (data.action === 'multiply') {
+  // data provides string values
+  const multiplier = JSON.parse(data.userPropertyMultiplier);
+  // a non-number would reach the server as an empty object and overwrite the property
+  if (typeof multiplier === 'number') {
+    log('[Countly] [GTM] Multiplying user property:['+ data.userPropertyKey +'] by:[' + multiplier + ']');
+    callInWindow('Countly.userData.multiply', data.userPropertyKey, multiplier);
+    callInWindow('Countly.userData.save');
+    data.gtmOnSuccess();
+  } else {
+    log('[Countly] [GTM] Multiplier:[' + data.userPropertyMultiplier + '] is not a number, user property:[' + data.userPropertyKey + '] not changed');
+    data.gtmOnFailure();
+  }
 }
 
 
@@ -1074,6 +1132,84 @@ ___WEB_PERMISSIONS___
                     "boolean": true
                   }
                 ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.userData.multiply"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "Countly.userData.save"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
               }
             ]
           }
@@ -1256,6 +1392,28 @@ scenarios:
     // Verify that init leaves the limit to the SDK default when the field is empty.
     assertThat(initConfig.max_key_length).isUndefined();
     assertApi('gtmOnSuccess').wasCalled();
+- name: User_multiply
+  code: |-
+    const mockData = {"userPropertyKey":"score","userPropertyMultiplier":"1.5","action":"multiply","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that the value is multiplied as a number and sent.
+    assertApi('callInWindow').wasCalledWith('Countly.userData.multiply', 'score', 1.5);
+    assertApi('callInWindow').wasCalledWith('Countly.userData.save');
+    assertApi('gtmOnSuccess').wasCalled();
+- name: User_multiply_not_a_number
+  code: |-
+    const mockData = {"userPropertyKey":"score","userPropertyMultiplier":"abc","action":"multiply","gtmTagId":2147483646,"gtmEventId":1};
+
+    // Call runCode to run the template's code.
+    runCode(mockData);
+
+    // Verify that nothing is sent and the tag fails.
+    assertApi('callInWindow').wasNotCalled();
+    assertApi('gtmOnFailure').wasCalled();
+    assertApi('gtmOnSuccess').wasNotCalled();
 setup: ''
 
 
